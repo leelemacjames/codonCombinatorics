@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codon Combinatorics & Genetic Algorithms</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .nav-link {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1.5em;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f7fafc;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            scroll-margin-top: 120px;
+        }
+        
+        h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        h3 {
+            color: #4a5568;
+            margin: 20px 0 10px 0;
+            font-size: 1.3em;
+        }
+        
+        .preamble {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #48bb78;
+            line-height: 1.8;
+        }
+        
+        .preamble p {
+            margin-bottom: 12px;
+            color: #2d3748;
+        }
+        
+        .preamble ul {
+            margin-left: 25px;
+            margin-top: 10px;
+        }
+        
+        .preamble li {
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+        
+        .preamble strong {
+            color: #2d3748;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+        
+        input[type="number"], select, input[type="text"] {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus, select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .codon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .codon {
+            padding: 15px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .codon:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .codon.start {
+            background: #c6f6d5;
+            border-color: #48bb78;
+        }
+        
+        .codon.stop {
+            background: #fed7d7;
+            border-color: #f56565;
+        }
+        
+        .codon-label {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7em;
+        }
+        
+        .codon.start .codon-label {
+            background: #48bb78;
+        }
+        
+        .codon.stop .codon-label {
+            background: #f56565;
+        }
+        
+        .base-a { color: #e53e3e; }
+        .base-t, .base-u { color: #38b2ac; }
+        .base-g { color: #ed8936; }
+        .base-c { color: #3182ce; }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .sequence-display {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            line-height: 1.8;
+            word-break: break-all;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .highlight {
+            background: #fef5e7;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .ga-visualization {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .generation {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .tour {
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .fitness {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .info-box {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .info-box strong {
+            color: #2c5282;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            border: 2px solid;
+        }
+        
+        .legend-box.start {
+            background: #c6f6d5;
+            border-color: #48bb78;
+        }
+        
+        .legend-box.stop {
+            background: #fed7d7;
+            border-color: #f56565;
+        }
+        
+        .legend-box.normal {
+            background: white;
+            border-color: #e2e8f0;
+        }
+        
+        .isbn-example {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .isbn-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .isbn-digit {
+            background: #f7fafc;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .isbn-digit.check {
+            background: #fef5e7;
+            border-color: #ed8936;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .nav-menu {
+                flex-direction: column;
+            }
+            
+            .codon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header id="top">
+            <h1>🧬 Codon Combinatorics & Genetic Algorithms</h1>
+            <p class="subtitle">Exploring Non-Repeating Sequences, DNA Coding, and Evolutionary Computation</p>
+            
+            <nav class="nav-menu">
+                <a href="#section1" class="nav-link">1. Codons & Permutations</a>
+                <a href="#section2" class="nav-link">2. De Bruijn Sequences</a>
+                <a href="#section3" class="nav-link">3. Mutations & Checksums</a>
+                <a href="#section4" class="nav-link">4. Genetic Algorithms</a>
+            </nav>
+        </header>
+        
+        <div class="content">
+            <!-- Section 1: Permutations and Combinations -->
+            <div class="section" id="section1">
+                <h2>1. Codons: The Language of Life</h2>
+                
+                <div class="preamble">
+                    <h3 style="margin-top:0;">Understanding Genetic Code</h3>
+                    <p>DNA stores genetic information using just four chemical bases: <strong>Adenine (A)</strong>, <strong>Thymine (T)</strong>, <strong>Guanine (G)</strong>, and <strong>Cytosine (C)</strong>. These bases are read in groups of three, called <strong>codons</strong>, which specify which amino acid should be added during protein synthesis.</p>
+                    
+                    <p><strong>Combinatorial Mathematics of Codons:</strong></p>
+                    <ul>
+                        <li>With 4 bases and codon length of 3: 4³ = <strong>64 possible codons</strong></li>
+                        <li>These 64 codons encode only <strong>20 amino acids</strong> (plus start/stop signals)</li>
+                        <li>This redundancy provides error tolerance—multiple codons can code for the same amino acid</li>
+                        <li>General formula: With <em>n</em> bases and codon length <em>k</em>, there are <strong>n<sup>k</sup></strong> possible codons</li>
+                    </ul>
+                    
+                    <p><strong>Special Codons:</strong></p>
+                    <ul>
+                        <li><strong style="color:#48bb78;">START Codons</strong> (green): ATG (primary), GTG, TTG, CTG—signal where protein synthesis begins</li>
+                        <li><strong style="color:#f56565;">STOP Codons</strong> (red): TGA, TAG, TAA—signal termination of protein synthesis</li>
+                        <li><strong>Regular Codons</strong>: All others code for specific amino acids</li>
+                    </ul>
+                    
+                    <p>The genetic code is nearly universal across all life forms, suggesting it evolved early in the history of life. In RNA (used during protein synthesis), Thymine (T) is replaced by Uracil (U).</p>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Key Concept:</strong> Permutations count arrangements where order matters, while combinations count selections where order doesn't matter. For codons, order is critical—ATG ≠ GTA!
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="codonLength">Codon Length (bases):</label>
+                        <input type="number" id="codonLength" value="3" min="1" max="5">
+                    </div>
+                    <div class="control-group">
+                        <label for="baseType">Base Alphabet:</label>
+                        <select id="baseType">
+                            <option value="DNA">DNA (A, T, G, C)</option>
+                            <option value="RNA">RNA (A, U, G, C)</option>
+                            <option value="Binary">Binary (0, 1)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button onclick="generateCodons()">Generate All Codons</button>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box start"></div>
+                        <span>START Codon</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box stop"></div>
+                        <span>STOP Codon</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box normal"></div>
+                        <span>Regular Codon</span>
+                    </div>
+                </div>
+                
+                <div class="stats" id="codonStats"></div>
+                <div class="codon-grid" id="codonGrid"></div>
+            </div>
+            
+            <!-- Section 2: Longest Non-Repeating Sequences -->
+            <div class="section" id="section2">
+                <h2>2. De Bruijn Sequences: Maximum Information Density</h2>
+                
+                <div class="preamble">
+                    <h3 style="margin-top:0;">The Shortest Superstring Problem</h3>
+                    <p>A <strong>De Bruijn sequence</strong> is a cyclic sequence that contains every possible n-letter word exactly once as a substring. This elegant mathematical construct has surprising connections to genetics and information theory.</p>
+                    
+                    <p><strong>Why This Matters for Genetics:</strong></p>
+                    <ul>
+                        <li><strong>Information Density</strong>: DNA must pack maximum information into minimal space</li>
+                        <li><strong>Error Detection</strong>: Non-repeating patterns help identify where reading frames begin</li>
+                        <li><strong>Gene Finding</strong>: Algorithms search for patterns in genomic sequences to locate genes</li>
+                        <li><strong>Overlapping Genes</strong>: Some organisms use overlapping reading frames, similar to how De Bruijn sequences overlap substrings</li>
+                    </ul>
+                    
+                    <p><strong>Mathematical Properties:</strong></p>
+                    <ul>
+                        <li>For alphabet size <em>k</em> and substring length <em>n</em>: Total substrings = <strong>k<sup>n</sup></strong></li>
+                        <li>Minimum sequence length = <strong>k<sup>n</sup> + n - 1</strong></li>
+                        <li>Example: Binary 3-tuples → 2³ = 8 substrings, minimum length = 8 + 3 - 1 = <strong>10</strong></li>
+                        <li>The sequence is "cyclic"—the end wraps around to connect with the beginning</li>
+                    </ul>
+                    
+                    <p>De Bruijn sequences were named after Dutch mathematician Nicolaas Govert de Bruijn (1918-2012), though they were independently discovered several times. They have applications in genome sequencing, cryptography, and even magic tricks!</p>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Connection to DNA:</strong> While real DNA doesn't follow De Bruijn patterns exactly, understanding maximum information density helps us appreciate how evolution has optimized genetic code for compactness and error resistance.
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="tupletSize">Tuplet Size (n):</label>
+                        <input type="number" id="tupletSize" value="3" min="2" max="5">
+                    </div>
+                    <div class="control-group">
+                        <label for="alphabetSize">Alphabet Size:</label>
+                        <select id="alphabetSize">
+                            <option value="2">Binary (0, 1)</option>
+                            <option value="4">DNA (A, T, G, C)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button onclick="generateDeBruijn()">Generate De Bruijn Sequence</button>
+                
+                <div id="deBruijnResult"></div>
+            </div>
+            
+            <!-- Section 3: Mutation & Error Detection -->
+            <div class="section" id="section3">
+                <h2>3. Mutations, Checksums, and Error Detection</h2>
+                
+                <div class="preamble">
+                    <h3 style="margin-top:0;">What is a Checksum?</h3>
+                    <p>A <strong>checksum</strong> is a small piece of data derived from a larger block of data, used to detect errors that may have been introduced during transmission or storage. The most familiar example is the <strong>ISBN (International Standard Book Number)</strong> on books.</p>
+                    
+                    <div class="isbn-example">
+                        <h4 style="margin-bottom:10px; color:#4a5568;">ISBN-10 Example: 0-306-40615-2</h4>
+                        <div class="isbn-breakdown">
+                            <div class="isbn-digit">0</div>
+                            <div class="isbn-digit">3</div>
+                            <div class="isbn-digit">0</div>
+                            <div class="isbn-digit">6</div>
+                            <div class="isbn-digit">4</div>
+                            <div class="isbn-digit">0</div>
+                            <div class="isbn-digit">6</div>
+                            <div class="isbn-digit">1</div>
+                            <div class="isbn-digit">5</div>
+                            <div class="isbn-digit check">2</div>
+                        </div>
+                        <p style="margin-top:10px; color:#4a5568; font-size:0.9em;">
+                            Calculation: (0×10 + 3×9 + 0×8 + 6×7 + 4×6 + 0×5 + 6×4 + 1×3 + 5×2) mod 11 = 2 ✓
+                        </p>
+                    </div>
+                    
+                    <p><strong>DNA Checksums: A Simplified Model</strong></p>
+                    <p>This tool uses a <em>simplified checksum model</em> for educational purposes. Real genetic error detection is far more sophisticated:</p>
+                    
+                    <ul>
+                        <li><strong>Our Model</strong>: Digital root checksum (A=1, T=2, G=3, C=4, sum digits until single digit)</li>
+                        <li><strong>Reality</strong>: DNA has multiple error-checking mechanisms:
+                            <ul style="margin-top:8px;">
+                                <li><strong>Proofreading enzymes</strong> during replication (error rate ~1 in 10⁷)</li>
+                                <li><strong>Mismatch repair systems</strong> fix errors after replication (~1 in 10⁹ after repair)</li>
+                                <li><strong>Codon redundancy</strong> (wobble base pairing)—many mutations don't change amino acids</li>
+                                <li><strong>DNA repair pathways</strong> fix damaged DNA from radiation, chemicals, etc.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <p><strong>Types of Mutations:</strong></p>
+                    <ul>
+                        <li><strong>Point mutations</strong>: Single base changes (what we simulate below)</li>
+                        <li><strong>Silent mutations</strong>: Change codon but not amino acid (due to redundancy)</li>
+                        <li><strong>Missense mutations</strong>: Change amino acid in protein</li>
+                        <li><strong>Nonsense mutations</strong>: Create premature stop codon</li>
+                        <li><strong>Insertions/Deletions</strong>: Shift reading frame (frameshift mutations)</li>
+                    </ul>
+                    
+                    <p><strong>Mutation Rates in Nature:</strong> Human germline mutation rate is approximately 1.2 × 10⁻⁸ per base per generation, meaning each person is born with about 60-100 new mutations compared to their parents.</p>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Educational Note:</strong> This checksum is a <em>toy model</em> to illustrate the concept of error detection. Real biological systems use redundancy, enzymatic proofreading, and repair mechanisms far more sophisticated than simple checksums. However, the principle—that errors can be detected by comparing computed values—remains the same.
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="originalSequence">Original DNA Sequence:</label>
+                        <input type="text" id="originalSequence" value="ATGGCTAGCTAG" 
+                               style="text-transform: uppercase;" placeholder="Enter DNA sequence">
+                    </div>
+                    <div class="control-group">
+                        <label for="mutationRate">Mutation Rate (%):</label>
+                        <input type="number" id="mutationRate" value="5" min="0" max="100" step="1">
+                    </div>
+                </div>
+                
+                <button onclick="simulateMutation()">Simulate Mutation</button>
+                
+                <div id="mutationResult"></div>
+            </div>
+            
+            <!-- Section 4: Genetic Algorithm -->
+            <div class="section" id="section4">
+                <h2>4. Genetic Algorithms: Evolution as Computation</h2>
+                
+                <div class="preamble">
+                    <h3 style="margin-top:0;">Mimicking Natural Selection</h3>
+                    <p><strong>Genetic algorithms</strong> (GAs) are optimization techniques inspired by Darwin's theory of evolution. They use concepts of selection, crossover (recombination), and mutation to evolve solutions to complex problems.</p>
+                    
+                    <p><strong>How Genetic Algorithms Work:</strong></p>
+                    <ol style="margin-left:25px; line-height:1.8;">
+                        <li><strong>Initialization</strong>: Create random population of candidate solutions</li>
+                        <li><strong>Evaluation</strong>: Measure "fitness" of each solution</li>
+                        <li><strong>Selection</strong>: Choose fitter individuals to "reproduce"</li>
+                        <li><strong>Crossover</strong>: Combine pairs of solutions to create offspring</li>
+                        <li><strong>Mutation</strong>: Randomly modify some solutions</li>
+                        <li><strong>Replacement</strong>: Form new generation and repeat</li>
+                    </ol>
+                    
+                    <p><strong>The Traveling Salesman Problem (TSP):</strong></p>
+                    <p>Given a set of cities and distances between them, find the shortest route that visits each city exactly once and returns to the start. This is an <em>NP-hard problem</em>—testing all routes becomes impossible even for moderate numbers of cities:</p>
+                    <ul>
+                        <li>10 cities: 181,440 routes</li>
+                        <li>20 cities: 6.08 × 10¹⁶ routes (would take >1 million years to check all)</li>
+                        <li>30 cities: 4.42 × 10²⁹ routes (longer than age of universe!)</li>
+                    </ul>
+                    
+                    <p><strong>Crossover Methods for TSP:</strong></p>
+                    <p>Simple crossover doesn't work for TSP because cities can't repeat. Special methods preserve valid tours:</p>
+                    <ul>
+                        <li><strong>PMX (Partially Mapped Crossover)</strong>: Maps positions between parents, preserving relative order</li>
+                        <li><strong>OX (Order Crossover)</strong>: Takes segment from one parent, fills remaining from other in order</li>
+                        <li><strong>CX (Cycle Crossover)</strong>: Each city maintains position from at least one parent</li>
+                    </ul>
+                    
+                    <p><strong>Connection to Real Genetics:</strong></p>
+                    <ul>
+                        <li><strong>Population</strong>: Like organisms in an ecosystem</li>
+                        <li><strong>Fitness</strong>: Analogous to reproductive success</li>
+                        <li><strong>Crossover</strong>: Sexual reproduction mixing parental genes</li>
+                        <li><strong>Mutation</strong>: Random copying errors during reproduction</li>
+                        <li><strong>Selection</strong>: "Survival of the fittest"</li>
+                    </ul>
+                    
+                    <p><strong>Applications Beyond TSP:</strong> Genetic algorithms are used in circuit design, scheduling, machine learning, drug design, and even evolved antenna designs for NASA spacecraft!</p>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Key Insight:</strong> GAs don't guarantee finding the <em>absolute best</em> solution, but they often find <em>very good solutions</em> in reasonable time for problems where testing all possibilities is impossible. This mirrors evolution—organisms aren't "perfect," but they're well-adapted to their environments.
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="populationSize">Population Size:</label>
+                        <input type="number" id="populationSize" value="50" min="10" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label for="generations">Generations:</label>
+                        <input type="number" id="generations" value="100" min="10" max="500">
+                    </div>
+                    <div class="control-group">
+                        <label for="crossoverType">Crossover Method:</label>
+                        <select id="crossoverType">
+                            <option value="PMX">Partially Mapped (PMX)</option>
+                            <option value="OX">Order Crossover (OX)</option>
+                            <option value="CX">Cycle Crossover (CX)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="gaMutationRate">GA Mutation Rate (%):</label>
+                        <input type="number" id="gaMutationRate" value="1" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+                
+                <button onclick="runGeneticAlgorithm()">Run Genetic Algorithm</button>
+                
+                <div id="gaResult"></div>
+            </div>
+        </div>
+    </div>
+    
+    <a href="#top" class="back-to-top" id="backToTop">↑</a>
+    
+    <script>
+        // Back to top button functionality
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+        
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Codon Generation
+        function generateCodons() {
+            const length = parseInt(document.getElementById('codonLength').value);
+            const baseType = document.getElementById('baseType').value;
+            
+            let bases;
+            switch(baseType) {
+                case 'DNA': bases = ['A', 'T', 'G', 'C']; break;
+                case 'RNA': bases = ['A', 'U', 'G', 'C']; break;
+                case 'Binary': bases = ['0', '1']; break;
+            }
+            
+            const codons = generateAllCombinations(bases, length);
+            
+            // Identify START and STOP codons for DNA/RNA
+            const startCodons = baseType === 'DNA' ? ['ATG', 'GTG', 'TTG', 'CTG'] : 
+                               baseType === 'RNA' ? ['AUG', 'GUG', 'UUG', 'CUG'] : [];
+            const stopCodons = baseType === 'DNA' ? ['TGA', 'TAG', 'TAA'] :
+                              baseType === 'RNA' ? ['UGA', 'UAG', 'UAA'] : [];
+            
+            let startCount = 0;
+            let stopCount = 0;
+            
+            codons.forEach(codon => {
+                if (startCodons.includes(codon)) startCount++;
+                if (stopCodons.includes(codon)) stopCount++;
+            });
+            
+            // Display stats
+            const statsHtml = `
+                <div class="stat-card animate-in">
+                    <div class="stat-value">${codons.length}</div>
+                    <div class="stat-label">Total Codons</div>
+                </div>
+                <div class="stat-card animate-in">
+                    <div class="stat-value">${startCount}</div>
+                    <div class="stat-label">START Codons</div>
+                </div>
+                <div class="stat-card animate-in">
+                    <div class="stat-value">${stopCount}</div>
+                    <div class="stat-label">STOP Codons</div>
+                </div>
+                <div class="stat-card animate-in">
+                    <div class="stat-value">${codons.length - startCount - stopCount}</div>
+                    <div class="stat-label">Regular Codons</div>
+                </div>
+            `;
+            document.getElementById('codonStats').innerHTML = statsHtml;
+            
+            // Display codons
+            const gridHtml = codons.map(codon => {
+                const colored = codon.split('').map(base => {
+                    const colorClass = baseType === 'Binary' ? '' : 
+                        `base-${base.toLowerCase()}`;
+                    return `<span class="${colorClass}">${base}</span>`;
+                }).join('');
+                
+                const isStart = startCodons.includes(codon);
+                const isStop = stopCodons.includes(codon);
+                const specialClass = isStart ? 'start' : isStop ? 'stop' : '';
+                const label = isStart ? '<span class="codon-label">START</span>' : 
+                             isStop ? '<span class="codon-label">STOP</span>' : '';
+                
+                return `<div class="codon ${specialClass} animate-in">${colored}${label}</div>`;
+            }).join('');
+            
+            document.getElementById('codonGrid').innerHTML = gridHtml;
+        }
+        
+        function generateAllCombinations(bases, length) {
+            if (length === 1) return bases;
+            
+            const result = [];
+            const smaller = generateAllCombinations(bases, length - 1);
+            
+            for (let base of bases) {
+                for (let combo of smaller) {
+                    result.push(base + combo);
+                }
+            }
+            
+            return result;
+        }
+        
+        // De Bruijn Sequence Generation
+        function generateDeBruijn() {
+            const n = parseInt(document.getElementById('tupletSize').value);
+            const k = parseInt(document.getElementById('alphabetSize').value);
+            
+            const alphabet = k === 2 ? ['0', '1'] : ['A', 'T', 'G', 'C'];
+            const sequence = deBruijnSequence(alphabet, n);
+            const allTuplets = generateAllCombinations(alphabet, n);
+            
+            // Find all tuplets in sequence
+            const foundTuplets = new Set();
+            for (let i = 0; i <= sequence.length - n; i++) {
+                foundTuplets.add(sequence.substring(i, i + n));
+            }
+            
+            const resultHtml = `
+                <div class="stats">
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${sequence.length}</div>
+                        <div class="stat-label">Sequence Length</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${allTuplets.length}</div>
+                        <div class="stat-label">Total ${n}-tuplets</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${foundTuplets.size}</div>
+                        <div class="stat-label">Found in Sequence</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${Math.pow(k, n) + n - 1}</div>
+                        <div class="stat-label">Theoretical Max</div>
+                    </div>
+                </div>
+                
+                <h3>Generated Sequence:</h3>
+                <div class="sequence-display animate-in">
+                    ${highlightTuplets(sequence, n, k === 4)}
+                </div>
+                
+                <h3>All ${n}-tuplets Present:</h3>
+                <div class="codon-grid">
+                    ${allTuplets.map(tuplet => {
+                        const found = foundTuplets.has(tuplet);
+                        const colored = k === 4 ? tuplet.split('').map(base => 
+                            `<span class="base-${base.toLowerCase()}">${base}</span>`
+                        ).join('') : tuplet;
+                        return `<div class="codon ${found ? '' : 'error'}">${colored}</div>`;
+                    }).join('')}
+                </div>
+                
+                ${foundTuplets.size < allTuplets.length ? 
+                    `<div class="info-box" style="background:#fed7d7; border-color:#f56565;">
+                        <strong>Note:</strong> The greedy algorithm didn't find a complete De Bruijn sequence. 
+                        Some ${n}-tuplets are missing. More sophisticated algorithms can guarantee completeness.
+                    </div>` : 
+                    `<div class="info-box" style="background:#c6f6d5; border-color:#48bb78;">
+                        <strong>Success!</strong> All possible ${n}-tuplets appear exactly once in the sequence.
+                    </div>`
+                }
+            `;
+            
+            document.getElementById('deBruijnResult').innerHTML = resultHtml;
+        }
+        
+        function deBruijnSequence(alphabet, n) {
+            const k = alphabet.length;
+            const total = Math.pow(k, n);
+            const sequence = [];
+            const seen = new Set();
+            
+            let current = Array(n).fill(alphabet[0]).join('');
+            sequence.push(current);
+            seen.add(current);
+            
+            while (seen.size < total) {
+                let found = false;
+                
+                for (let symbol of alphabet) {
+                    const next = current.substring(1) + symbol;
+                    if (!seen.has(next)) {
+                        sequence.push(symbol);
+                        current = next;
+                        seen.add(next);
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) break;
+            }
+            
+            return sequence.join('');
+        }
+        
+        function highlightTuplets(sequence, n, isDNA = false) {
+            let html = '';
+            for (let i = 0; i < sequence.length; i++) {
+                if (i % n === 0) {
+                    html += '<span class="highlight">';
+                }
+                
+                const char = sequence[i];
+                if (isDNA) {
+                    html += `<span class="base-${char.toLowerCase()}">${char}</span>`;
+                } else {
+                    html += char;
+                }
+                
+                if ((i + 1) % n === 0) {
+                    html += '</span> ';
+                }
+            }
+            return html;
+        }
+        
+        // Mutation Simulation
+        function simulateMutation() {
+            const original = document.getElementById('originalSequence').value.toUpperCase().replace(/[^ATGCU]/g, '');
+            
+            if (original.length === 0) {
+                document.getElementById('mutationResult').innerHTML = 
+                    '<div class="info-box" style="background:#fed7d7; border-color:#f56565;"><strong>Error:</strong> Please enter a valid DNA sequence (A, T, G, C only).</div>';
+                return;
+            }
+            
+            const rate = parseFloat(document.getElementById('mutationRate').value) / 100;
+            
+            const bases = original.includes('U') ? ['A', 'U', 'G', 'C'] : ['A', 'T', 'G', 'C'];
+            let mutated = '';
+            const mutations = [];
+            
+            for (let i = 0; i < original.length; i++) {
+                if (Math.random() < rate) {
+                    const availableBases = bases.filter(b => b !== original[i]);
+                    const newBase = availableBases[Math.floor(Math.random() * availableBases.length)];
+                    mutated += newBase;
+                    mutations.push({ pos: i, from: original[i], to: newBase });
+                } else {
+                    mutated += original[i];
+                }
+            }
+            
+            const originalChecksum = calculateChecksum(original);
+            const mutatedChecksum = calculateChecksum(mutated);
+            
+            // Analyze codon-level effects
+            const codonAnalysis = analyzeCodonMutations(original, mutated);
+            
+            const resultHtml = `
+                <div class="stats">
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${mutations.length}</div>
+                        <div class="stat-label">Point Mutations</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${(mutations.length/original.length*100).toFixed(1)}%</div>
+                        <div class="stat-label">Mutation Rate</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${originalChecksum !== mutatedChecksum ? 'YES' : 'NO'}</div>
+                        <div class="stat-label">Checksum Changed</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${codonAnalysis.affectedCodons}</div>
+                        <div class="stat-label">Codons Affected</div>
+                    </div>
+                </div>
+                
+                <h3>Original Sequence:</h3>
+                <div class="sequence-display">
+                    ${colorBases(original)}
+                    <div style="margin-top:10px; color:#718096;">
+                        Checksum: ${originalChecksum} | Length: ${original.length} bases | ${Math.floor(original.length/3)} complete codons
+                    </div>
+                </div>
+                
+                <h3>Mutated Sequence:</h3>
+                <div class="sequence-display">
+                    ${highlightMutations(original, mutated)}
+                    <div style="margin-top:10px; color:#718096;">
+                        Checksum: ${mutatedChecksum} | Detected: ${originalChecksum !== mutatedChecksum ? '✓ Checksum changed!' : '✗ Checksum unchanged'}
+                    </div>
+                </div>
+                
+                ${mutations.length > 0 ? `
+                    <h3>Mutation Details:</h3>
+                    <div style="background:white; padding:15px; border-radius:8px;">
+                        ${mutations.map(m => 
+                            `<div style="margin:5px 0; padding:8px; background:#f7fafc; border-radius:5px;">
+                                <strong>Position ${m.pos}:</strong> 
+                                <span class="base-${m.from.toLowerCase()}" style="font-size:1.2em; font-weight:bold;">${m.from}</span> → 
+                                <span class="base-${m.to.toLowerCase()}" style="font-size:1.2em; font-weight:bold;">${m.to}</span>
+                                <span style="color:#718096; margin-left:10px;">(Codon ${Math.floor(m.pos/3) + 1}, position ${(m.pos%3) + 1})</span>
+                            </div>`
+                        ).join('')}
+                    </div>
+                    
+                    ${codonAnalysis.startStopChanges ? `
+                        <div class="info-box" style="background:#fed7d7; border-color:#f56565;">
+                            <strong>Critical Mutations Detected:</strong> ${codonAnalysis.startStopChanges}
+                        </div>
+                    ` : ''}
+                ` : `
+                    <div class="info-box" style="background:#c6f6d5; border-color:#48bb78;">
+                        <strong>No mutations occurred!</strong> The sequence remained unchanged.
+                    </div>
+                `}
+            `;
+            
+            document.getElementById('mutationResult').innerHTML = resultHtml;
+        }
+        
+        function colorBases(sequence) {
+            return sequence.split('').map(base => 
+                `<span class="base-${base.toLowerCase()}">${base}</span>`
+            ).join('');
+        }
+        
+        function highlightMutations(original, mutated) {
+            let html = '';
+            for (let i = 0; i < mutated.length; i++) {
+                const base = mutated[i];
+                const isMutation = original[i] !== base;
+                html += isMutation ? 
+                    `<span class="error base-${base.toLowerCase()}" style="font-weight:bold; font-size:1.2em;">${base}</span>` :
+                    `<span class="base-${base.toLowerCase()}">${base}</span>`;
+            }
+            return html;
+        }
+        
+        function calculateChecksum(sequence) {
+            const values = { 'A': 1, 'T': 2, 'G': 3, 'C': 4, 'U': 2 };
+            let sum = 0;
+            for (let base of sequence) {
+                sum += values[base] || 0;
+            }
+            while (sum > 9) {
+                sum = sum.toString().split('').reduce((a, b) => a + parseInt(b), 0);
+            }
+            return sum;
+        }
+        
+        function analyzeCodonMutations(original, mutated) {
+            const startCodons = ['ATG', 'GTG', 'TTG', 'CTG', 'AUG', 'GUG', 'UUG', 'CUG'];
+            const stopCodons = ['TGA', 'TAG', 'TAA', 'UGA', 'UAG', 'UAA'];
+            
+            let affectedCodons = 0;
+            let startStopChanges = '';
+            
+            for (let i = 0; i < Math.floor(original.length / 3) * 3; i += 3) {
+                const origCodon = original.substring(i, i + 3);
+                const mutCodon = mutated.substring(i, i + 3);
+                
+                if (origCodon !== mutCodon) {
+                    affectedCodons++;
+                    
+                    const wasStart = startCodons.includes(origCodon);
+                    const wasStop = stopCodons.includes(origCodon);
+                    const isStart = startCodons.includes(mutCodon);
+                    const isStop = stopCodons.includes(mutCodon);
+                    
+                    if (wasStart && !isStart) {
+                        startStopChanges += `START codon lost at position ${i/3 + 1}. `;
+                    }
+                    if (!wasStart && isStart) {
+                        startStopChanges += `New START codon created at position ${i/3 + 1}. `;
+                    }
+                    if (wasStop && !isStop) {
+                        startStopChanges += `STOP codon lost at position ${i/3 + 1}. `;
+                    }
+                    if (!wasStop && isStop) {
+                        startStopChanges += `Premature STOP codon at position ${i/3 + 1}. `;
+                    }
+                }
+            }
+            
+            return { affectedCodons, startStopChanges };
+        }
+        
+        // Genetic Algorithm
+        function runGeneticAlgorithm() {
+            const popSize = parseInt(document.getElementById('populationSize').value);
+            const gens = parseInt(document.getElementById('generations').value);
+            const crossover = document.getElementById('crossoverType').value;
+            const mutRate = parseFloat(document.getElementById('gaMutationRate').value) / 100;
+            
+            const cities = ['X', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+            const distances = generateRandomDistances(cities.length);
+            
+            let population = initializePopulation(popSize, cities);
+            const history = [];
+            
+            for (let gen = 0; gen < gens; gen++) {
+                population = population.map(tour => ({
+                    tour: tour,
+                    fitness: calculateFitness(tour, distances),
+                    distance: calculateTotalDistance(tour, distances)
+                })).sort((a, b) => a.distance - b.distance);
+                
+                if (gen % Math.max(1, Math.floor(gens/10)) === 0 || gen === gens - 1) {
+                    history.push({
+                        generation: gen,
+                        best: population[0],
+                        average: population.reduce((sum, p) => sum + p.distance, 0) / population.length
+                    });
+                }
+                
+                const newPop = [population[0].tour];
+                
+                while (newPop.length < popSize) {
+                    const parent1 = tournamentSelect(population);
+                    const parent2 = tournamentSelect(population);
+                    let child = applyCrossover(parent1.tour, parent2.tour, crossover);
+                    
+                    if (Math.random() < mutRate) {
+                        child = mutate(child);
+                    }
+                    
+                    newPop.push(child);
+                }
+                
+                population = newPop;
+            }
+            
+            displayGAResults(history, cities);
+        }
+        
+        function generateRandomDistances(n) {
+            const dist = Array(n).fill().map(() => Array(n).fill(0));
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    const d = Math.floor(Math.random() * 80) + 20;
+                    dist[i][j] = dist[j][i] = d;
+                }
+            }
+            return dist;
+        }
+        
+        function initializePopulation(size, cities) {
+            const pop = [];
+            for (let i = 0; i < size; i++) {
+                const tour = [...cities.slice(1)];
+                shuffle(tour);
+                pop.push([cities[0], ...tour]);
+            }
+            return pop;
+        }
+        
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        
+        function calculateTotalDistance(tour, distances) {
+            let totalDist = 0;
+            const cityToIndex = (city) => {
+                if (city === 'X') return 0;
+                return city.charCodeAt(0) - 64;
+            };
+            
+            for (let i = 0; i < tour.length - 1; i++) {
+                const from = cityToIndex(tour[i]);
+                const to = cityToIndex(tour[i + 1]);
+                totalDist += distances[from][to];
+            }
+            
+            const last = cityToIndex(tour[tour.length - 1]);
+            const first = cityToIndex(tour[0]);
+            totalDist += distances[last][first];
+            
+            return totalDist;
+        }
+        
+        function calculateFitness(tour, distances) {
+            return 10000 / calculateTotalDistance(tour, distances);
+        }
+        
+        function tournamentSelect(population, k = 5) {
+            const tournament = [];
+            for (let i = 0; i < k; i++) {
+                tournament.push(population[Math.floor(Math.random() * population.length)]);
+            }
+            return tournament.reduce((best, curr) => curr.distance < best.distance ? curr : best);
+        }
+        
+        function applyCrossover(p1, p2, type) {
+            if (type === 'PMX') {
+                return pmxCrossover(p1, p2);
+            } else if (type === 'OX') {
+                return orderCrossover(p1, p2);
+            } else {
+                return cycleCrossover(p1, p2);
+            }
+        }
+        
+        function pmxCrossover(p1, p2) {
+            const len = p1.length;
+            const start = Math.floor(Math.random() * (len - 3)) + 1;
+            const end = start + Math.floor(Math.random() * (len - start - 1)) + 1;
+            
+            const child = Array(len).fill(null);
+            child[0] = p1[0];
+            
+            for (let i = start; i < end; i++) {
+                child[i] = p1[i];
+            }
+            
+            for (let i = 1; i < len; i++) {
+                if (i >= start && i < end) continue;
+                
+                let city = p2[i];
+                while (child.includes(city)) {
+                    const idx = p2.indexOf(city);
+                    city = p1[idx];
+                }
+                child[i] = city;
+            }
+            
+            return child;
+        }
+        
+        function orderCrossover(p1, p2) {
+            const len = p1.length;
+            const start = Math.floor(Math.random() * (len - 3)) + 1;
+            const end = start + Math.floor(Math.random() * (len - start - 1)) + 1;
+            
+            const child = Array(len).fill(null);
+            child[0] = p1[0];
+            
+            for (let i = start; i < end; i++) {
+                child[i] = p1[i];
+            }
+            
+            let childIdx = end >= len ? 1 : end;
+            for (let i = 0; i < len; i++) {
+                const p2Idx = (end + i) % len;
+                if (p2Idx === 0) continue;
+                
+                if (!child.includes(p2[p2Idx])) {
+                    while (child[childIdx] !== null) {
+                        childIdx++;
+                        if (childIdx >= len) childIdx = 1;
+                    }
+                    child[childIdx] = p2[p2Idx];
+                }
+            }
+            
+            return child;
+        }
+        
+        function cycleCrossover(p1, p2) {
+            const len = p1.length;
+            const child = Array(len).fill(null);
+            child[0] = p1[0];
+            
+            const visited = new Set([0]);
+            let idx = 0;
+            
+            while (true) {
+                child[idx] = p1[idx];
+                const val = p2[idx];
+                idx = p1.indexOf(val);
+                
+                if (visited.has(idx)) break;
+                visited.add(idx);
+            }
+            
+            for (let i = 1; i < len; i++) {
+                if (child[i] === null) {
+                    child[i] = p2[i];
+                }
+            }
+            
+            return child;
+        }
+        
+        function mutate(tour) {
+            const newTour = [...tour];
+            const i = Math.floor(Math.random() * (tour.length - 1)) + 1;
+            const j = Math.floor(Math.random() * (tour.length - 1)) + 1;
+            [newTour[i], newTour[j]] = [newTour[j], newTour[i]];
+            return newTour;
+        }
+        
+        function displayGAResults(history, cities) {
+            const improvement = ((history[0].best.distance - history[history.length-1].best.distance) / history[0].best.distance * 100);
+            
+            const resultHtml = `
+                <div class="stats">
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${history.length}</div>
+                        <div class="stat-label">Generations Recorded</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${history[0].best.distance.toFixed(0)}</div>
+                        <div class="stat-label">Initial Distance (km)</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${history[history.length-1].best.distance.toFixed(0)}</div>
+                        <div class="stat-label">Final Distance (km)</div>
+                    </div>
+                    <div class="stat-card animate-in">
+                        <div class="stat-value">${improvement.toFixed(1)}%</div>
+                        <div class="stat-label">Improvement</div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Result:</strong> The genetic algorithm reduced the tour distance by ${(history[0].best.distance - history[history.length-1].best.distance).toFixed(0)} km 
+                    through ${history[history.length-1].generation} generations of evolution!
+                </div>
+                
+                <h3>Evolution Progress:</h3>
+                <div class="ga-visualization">
+                    ${history.map((h, idx) => `
+                        <div class="generation animate-in" style="animation-delay: ${idx * 0.05}s;">
+                            <strong>Generation ${h.generation}</strong>
+                            <div class="tour">
+                                <span style="font-size:0.95em;">${h.best.tour.join(' → ')} → ${h.best.tour[0]}</span>
+                                <span class="fitness">${h.best.distance.toFixed(0)} km</span>
+                            </div>
+                            <div style="color:#718096; font-size:0.9em; margin-top:5px;">
+                                Population Average: ${h.average.toFixed(0)} km
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            document.getElementById('gaResult').innerHTML = resultHtml;
+        }
+        
+        // Initialize on load
+        window.onload = () => {
+            generateCodons();
+        };
+    </script>
+</body>
+</html>
