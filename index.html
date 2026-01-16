@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -141,7 +141,7 @@
             color: #2d3748;
         }
         
-        .preamble ul {
+        .preamble ul, .preamble ol {
             margin-left: 25px;
             margin-top: 10px;
         }
@@ -242,6 +242,12 @@
             border-color: #f56565;
         }
         
+        .codon.missing {
+            background: #fed7d7;
+            border-color: #f56565;
+            opacity: 0.6;
+        }
+        
         .codon-label {
             position: absolute;
             top: -8px;
@@ -290,6 +296,18 @@
         .stat-label {
             color: #718096;
             margin-top: 5px;
+            font-size: 0.95em;
+        }
+        
+        .formula-display {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            text-align: center;
+            border: 2px solid #e2e8f0;
         }
         
         .sequence-display {
@@ -315,6 +333,24 @@
             color: #c53030;
             padding: 2px 4px;
             border-radius: 3px;
+        }
+        
+        .network-diagram {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .network-svg {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin: 0 auto;
+            display: block;
         }
         
         .ga-visualization {
@@ -412,6 +448,12 @@
             border-color: #e2e8f0;
         }
         
+        .legend-box.missing {
+            background: #fed7d7;
+            border-color: #f56565;
+            opacity: 0.6;
+        }
+        
         .isbn-example {
             background: white;
             padding: 20px;
@@ -461,6 +503,7 @@
         <header id="top">
             <h1>🧬 Codon Combinatorics & Genetic Algorithms</h1>
             <p class="subtitle">Exploring Non-Repeating Sequences, DNA Coding, and Evolutionary Computation</p>
+            <p class="subtitle">LeeMcCullochJames@</p>
             
             <nav class="nav-menu">
                 <a href="#section1" class="nav-link">1. Codons & Permutations</a>
@@ -512,6 +555,7 @@
                             <option value="DNA">DNA (A, T, G, C)</option>
                             <option value="RNA">RNA (A, U, G, C)</option>
                             <option value="Binary">Binary (0, 1)</option>
+                            <option value="Ternary">Ternary (0, 1, 2)</option>
                         </select>
                     </div>
                 </div>
@@ -555,17 +599,29 @@
                     
                     <p><strong>Mathematical Properties:</strong></p>
                     <ul>
-                        <li>For alphabet size <em>k</em> and substring length <em>n</em>: Total substrings = <strong>k<sup>n</sup></strong></li>
-                        <li>Minimum sequence length = <strong>k<sup>n</sup> + n - 1</strong></li>
-                        <li>Example: Binary 3-tuples → 2³ = 8 substrings, minimum length = 8 + 3 - 1 = <strong>10</strong></li>
-                        <li>The sequence is "cyclic"—the end wraps around to connect with the beginning</li>
+                        <li>For alphabet size <em>k</em> and substring length <em>n</em>: Total unique substrings = <strong>k<sup>n</sup></strong></li>
+                        <li>Optimal (cyclic) sequence length = <strong>k<sup>n</sup></strong> (wraps around, end connects to beginning)</li>
+                        <li>Linear (non-cyclic) sequence length = <strong>k<sup>n</sup> + n - 1</strong></li>
+                        <li>Example: Binary 3-tuples → 2³ = 8 substrings, cyclic length = <strong>8</strong>, linear = <strong>10</strong></li>
+                    </ul>
+                    
+                    <p><strong>Concrete Examples:</strong></p>
+                    <ul>
+                        <li><strong>Binary, n=3:</strong> Cyclic length = 2³ = 8, Linear = 10. Example: <code>0001011100</code></li>
+                        <li><strong>Binary, n=4:</strong> Cyclic length = 2⁴ = 16, Linear = 19</li>
+                        <li><strong>Binary, n=5:</strong> Cyclic length = 2⁵ = 32, Linear = 36</li>
+                        <li><strong>Ternary (0,1,2), n=2:</strong> Cyclic length = 3² = 9, Linear = 11</li>
+                        <li><strong>DNA (A,T,G,C), n=3:</strong> Cyclic length = 4³ = 64, Linear = 66 (would contain all 64 codons!)</li>
                     </ul>
                     
                     <p>De Bruijn sequences were named after Dutch mathematician Nicolaas Govert de Bruijn (1918-2012), though they were independently discovered several times. They have applications in genome sequencing, cryptography, and even magic tricks!</p>
                 </div>
                 
                 <div class="info-box">
-                    <strong>Connection to DNA:</strong> While real DNA doesn't follow De Bruijn patterns exactly, understanding maximum information density helps us appreciate how evolution has optimized genetic code for compactness and error resistance.
+                    <strong>Understanding the Visualization:</strong> Below, you'll see all possible n-tuplets displayed as tiles. 
+                    <strong>Green/white tiles</strong> indicate tuplets that were successfully found in the generated sequence. 
+                    <strong>Red/pink tiles</strong> indicate missing tuplets—these didn't appear in the sequence, meaning the algorithm 
+                    didn't produce a perfect De Bruijn sequence. A complete De Bruijn sequence has <em>all tiles green</em>.
                 </div>
                 
                 <div class="controls">
@@ -574,15 +630,27 @@
                         <input type="number" id="tupletSize" value="3" min="2" max="5">
                     </div>
                     <div class="control-group">
-                        <label for="alphabetSize">Alphabet Size:</label>
+                        <label for="alphabetSize">Alphabet Size (k):</label>
                         <select id="alphabetSize">
                             <option value="2">Binary (0, 1)</option>
+                            <option value="3">Ternary (0, 1, 2)</option>
                             <option value="4">DNA (A, T, G, C)</option>
                         </select>
                     </div>
                 </div>
                 
                 <button onclick="generateDeBruijn()">Generate De Bruijn Sequence</button>
+                
+                <div class="legend" style="margin-top:20px;">
+                    <div class="legend-item">
+                        <div class="legend-box normal"></div>
+                        <span>Tuplet Found in Sequence</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box missing"></div>
+                        <span>Tuplet Missing (Red = Not Found)</span>
+                    </div>
+                </div>
                 
                 <div id="deBruijnResult"></div>
             </div>
@@ -664,21 +732,13 @@
             
             <!-- Section 4: Genetic Algorithm -->
             <div class="section" id="section4">
-                <h2>4. Genetic Algorithms: Evolution as Computation</h2>
+                <h2>4. Genetic Algorithms for the Traveling Salesman Problem</h2>
                 
                 <div class="preamble">
-                    <h3 style="margin-top:0;">Mimicking Natural Selection</h3>
+                    <h3 style="margin-top:0;">Evolution as Computation</h3>
                     <p><strong>Genetic algorithms</strong> (GAs) are optimization techniques inspired by Darwin's theory of evolution. They use concepts of selection, crossover (recombination), and mutation to evolve solutions to complex problems.</p>
                     
-                    <p><strong>How Genetic Algorithms Work:</strong></p>
-                    <ol style="margin-left:25px; line-height:1.8;">
-                        <li><strong>Initialization</strong>: Create random population of candidate solutions</li>
-                        <li><strong>Evaluation</strong>: Measure "fitness" of each solution</li>
-                        <li><strong>Selection</strong>: Choose fitter individuals to "reproduce"</li>
-                        <li><strong>Crossover</strong>: Combine pairs of solutions to create offspring</li>
-                        <li><strong>Mutation</strong>: Randomly modify some solutions</li>
-                        <li><strong>Replacement</strong>: Form new generation and repeat</li>
-                    </ol>
+                    <p><strong>Important Context:</strong> This section demonstrates GAs using the <strong>Traveling Salesman Problem (TSP)</strong>—a classic computational challenge. While TSP is not directly related to biological genetics, the <em>algorithm mimics evolutionary processes</em> to find solutions.</p>
                     
                     <p><strong>The Traveling Salesman Problem (TSP):</strong></p>
                     <p>Given a set of cities and distances between them, find the shortest route that visits each city exactly once and returns to the start. This is an <em>NP-hard problem</em>—testing all routes becomes impossible even for moderate numbers of cities:</p>
@@ -687,6 +747,25 @@
                         <li>20 cities: 6.08 × 10¹⁶ routes (would take >1 million years to check all)</li>
                         <li>30 cities: 4.42 × 10²⁹ routes (longer than age of universe!)</li>
                     </ul>
+                    
+                    <p><strong>Understanding "Population" in GA Context:</strong></p>
+                    <p>A <strong>population</strong> is a collection of candidate solutions (not cities!). Each individual in the population represents one possible tour through all cities. Think of it as:</p>
+                    <ul>
+                        <li><strong>Population Size = 50</strong> means we maintain 50 different potential routes simultaneously</li>
+                        <li>Each route is a <strong>chromosome</strong> (e.g., X→A→C→B→D→X)</li>
+                        <li>The algorithm evolves this population over many generations</li>
+                        <li>Fitter routes (shorter distances) are more likely to "reproduce"</li>
+                    </ul>
+                    
+                    <p><strong>How the Genetic Algorithm Works for TSP:</strong></p>
+                    <ol style="margin-left:25px; line-height:1.8;">
+                        <li><strong>Initialization</strong>: Create <em>Population Size</em> random tours (e.g., 50 random routes)</li>
+                        <li><strong>Evaluation</strong>: Calculate total distance for each tour</li>
+                        <li><strong>Selection</strong>: Choose better (shorter) tours to "reproduce"</li>
+                        <li><strong>Crossover</strong>: Combine two parent tours to create offspring tours</li>
+                        <li><strong>Mutation</strong>: Randomly swap cities in some tours (at specified rate)</li>
+                        <li><strong>Replacement</strong>: Form new generation and repeat for <em>N Generations</em></li>
+                    </ol>
                     
                     <p><strong>Crossover Methods for TSP:</strong></p>
                     <p>Simple crossover doesn't work for TSP because cities can't repeat. Special methods preserve valid tours:</p>
@@ -698,14 +777,13 @@
                     
                     <p><strong>Connection to Real Genetics:</strong></p>
                     <ul>
-                        <li><strong>Population</strong>: Like organisms in an ecosystem</li>
-                        <li><strong>Fitness</strong>: Analogous to reproductive success</li>
+                        <li><strong>Population</strong>: Like organisms in an ecosystem (each tour = one organism)</li>
+                        <li><strong>Fitness</strong>: Analogous to reproductive success (shorter tours = fitter)</li>
                         <li><strong>Crossover</strong>: Sexual reproduction mixing parental genes</li>
                         <li><strong>Mutation</strong>: Random copying errors during reproduction</li>
                         <li><strong>Selection</strong>: "Survival of the fittest"</li>
+                        <li><strong>Generations</strong>: Time passing, allowing evolution to occur</li>
                     </ul>
-                    
-                    <p><strong>Applications Beyond TSP:</strong> Genetic algorithms are used in circuit design, scheduling, machine learning, drug design, and even evolved antenna designs for NASA spacecraft!</p>
                 </div>
                 
                 <div class="info-box">
@@ -714,12 +792,14 @@
                 
                 <div class="controls">
                     <div class="control-group">
-                        <label for="populationSize">Population Size:</label>
+                        <label for="populationSize">Population Size (# of routes):</label>
                         <input type="number" id="populationSize" value="50" min="10" max="200">
+                        <small style="color:#718096; margin-top:5px;">How many candidate solutions to maintain</small>
                     </div>
                     <div class="control-group">
-                        <label for="generations">Generations:</label>
+                        <label for="generations">Generations (iterations):</label>
                         <input type="number" id="generations" value="100" min="10" max="500">
+                        <small style="color:#718096; margin-top:5px;">How many evolution cycles to run</small>
                     </div>
                     <div class="control-group">
                         <label for="crossoverType">Crossover Method:</label>
@@ -728,15 +808,18 @@
                             <option value="OX">Order Crossover (OX)</option>
                             <option value="CX">Cycle Crossover (CX)</option>
                         </select>
+                        <small style="color:#718096; margin-top:5px;">How to combine parent tours</small>
                     </div>
                     <div class="control-group">
-                        <label for="gaMutationRate">GA Mutation Rate (%):</label>
-                        <input type="number" id="gaMutationRate" value="1" min="0" max="100" step="0.1">
+                        <label for="gaMutationRate">Mutation Rate (%):</label>
+                        <input type="number" id="gaMutationRate" value="2" min="0" max="100" step="0.5">
+                        <small style="color:#718096; margin-top:5px;">Probability of random changes</small>
                     </div>
                 </div>
                 
                 <button onclick="runGeneticAlgorithm()">Run Genetic Algorithm</button>
                 
+                <div id="tspNetwork"></div>
                 <div id="gaResult"></div>
             </div>
         </div>
@@ -779,6 +862,7 @@
                 case 'DNA': bases = ['A', 'T', 'G', 'C']; break;
                 case 'RNA': bases = ['A', 'U', 'G', 'C']; break;
                 case 'Binary': bases = ['0', '1']; break;
+                case 'Ternary': bases = ['0', '1', '2']; break;
             }
             
             const codons = generateAllCombinations(bases, length);
@@ -801,7 +885,7 @@
             const statsHtml = `
                 <div class="stat-card animate-in">
                     <div class="stat-value">${codons.length}</div>
-                    <div class="stat-label">Total Codons</div>
+                    <div class="stat-label">Total Codons (${bases.length}<sup>${length}</sup>)</div>
                 </div>
                 <div class="stat-card animate-in">
                     <div class="stat-value">${startCount}</div>
@@ -821,7 +905,7 @@
             // Display codons
             const gridHtml = codons.map(codon => {
                 const colored = codon.split('').map(base => {
-                    const colorClass = baseType === 'Binary' ? '' : 
+                    const colorClass = (baseType === 'Binary' || baseType === 'Ternary') ? '' : 
                         `base-${base.toLowerCase()}`;
                     return `<span class="${colorClass}">${base}</span>`;
                 }).join('');
@@ -858,7 +942,13 @@
             const n = parseInt(document.getElementById('tupletSize').value);
             const k = parseInt(document.getElementById('alphabetSize').value);
             
-            const alphabet = k === 2 ? ['0', '1'] : ['A', 'T', 'G', 'C'];
+            let alphabet;
+            switch(k) {
+                case 2: alphabet = ['0', '1']; break;
+                case 3: alphabet = ['0', '1', '2']; break;
+                case 4: alphabet = ['A', 'T', 'G', 'C']; break;
+            }
+            
             const sequence = deBruijnSequence(alphabet, n);
             const allTuplets = generateAllCombinations(alphabet, n);
             
@@ -868,23 +958,32 @@
                 foundTuplets.add(sequence.substring(i, i + n));
             }
             
+            const cyclicLength = Math.pow(k, n);
+            const linearLength = cyclicLength + n - 1;
+            
             const resultHtml = `
+                <div class="formula-display">
+                    Cyclic Length = k<sup>n</sup> = ${k}<sup>${n}</sup> = ${cyclicLength}
+                    <br>
+                    Linear Length = k<sup>n</sup> + n - 1 = ${cyclicLength} + ${n} - 1 = ${linearLength}
+                </div>
+                
                 <div class="stats">
                     <div class="stat-card animate-in">
                         <div class="stat-value">${sequence.length}</div>
-                        <div class="stat-label">Sequence Length</div>
+                        <div class="stat-label">Actual Sequence Length</div>
                     </div>
                     <div class="stat-card animate-in">
                         <div class="stat-value">${allTuplets.length}</div>
-                        <div class="stat-label">Total ${n}-tuplets</div>
+                        <div class="stat-label">Total ${n}-tuplets (k<sup>n</sup> = ${k}<sup>${n}</sup>)</div>
                     </div>
                     <div class="stat-card animate-in">
                         <div class="stat-value">${foundTuplets.size}</div>
-                        <div class="stat-label">Found in Sequence</div>
+                        <div class="stat-label">Found in Sequence (Green)</div>
                     </div>
                     <div class="stat-card animate-in">
-                        <div class="stat-value">${Math.pow(k, n) + n - 1}</div>
-                        <div class="stat-label">Theoretical Max</div>
+                        <div class="stat-value">${allTuplets.length - foundTuplets.size}</div>
+                        <div class="stat-label">Missing (Red)</div>
                     </div>
                 </div>
                 
@@ -893,24 +992,28 @@
                     ${highlightTuplets(sequence, n, k === 4)}
                 </div>
                 
-                <h3>All ${n}-tuplets Present:</h3>
+                <h3>All ${n}-tuplets (${allTuplets.length} total):</h3>
+                <p style="color:#718096; margin:10px 0;">Green tiles appear in the sequence. Red tiles are missing.</p>
                 <div class="codon-grid">
                     ${allTuplets.map(tuplet => {
                         const found = foundTuplets.has(tuplet);
                         const colored = k === 4 ? tuplet.split('').map(base => 
                             `<span class="base-${base.toLowerCase()}">${base}</span>`
                         ).join('') : tuplet;
-                        return `<div class="codon ${found ? '' : 'error'}">${colored}</div>`;
+                        return `<div class="codon ${found ? '' : 'missing'}">${colored}</div>`;
                     }).join('')}
                 </div>
                 
                 ${foundTuplets.size < allTuplets.length ? 
                     `<div class="info-box" style="background:#fed7d7; border-color:#f56565;">
-                        <strong>Note:</strong> The greedy algorithm didn't find a complete De Bruijn sequence. 
-                        Some ${n}-tuplets are missing. More sophisticated algorithms can guarantee completeness.
+                        <strong>Incomplete Sequence:</strong> The greedy algorithm found ${foundTuplets.size} out of ${allTuplets.length} possible ${n}-tuplets 
+                        (${(foundTuplets.size/allTuplets.length*100).toFixed(1)}% complete). 
+                        ${allTuplets.length - foundTuplets.size} tuplets are missing (shown in red above). 
+                        More sophisticated algorithms like Hierholzer's algorithm for Eulerian paths can guarantee a complete De Bruijn sequence.
                     </div>` : 
                     `<div class="info-box" style="background:#c6f6d5; border-color:#48bb78;">
-                        <strong>Success!</strong> All possible ${n}-tuplets appear exactly once in the sequence.
+                        <strong>Perfect De Bruijn Sequence!</strong> All ${allTuplets.length} possible ${n}-tuplets appear exactly once in the sequence.
+                        This is the shortest possible sequence containing every ${n}-letter combination.
                     </div>`
                 }
             `;
@@ -1010,7 +1113,7 @@
                     </div>
                     <div class="stat-card animate-in">
                         <div class="stat-value">${(mutations.length/original.length*100).toFixed(1)}%</div>
-                        <div class="stat-label">Mutation Rate</div>
+                        <div class="stat-label">Actual Mutation Rate</div>
                     </div>
                     <div class="stat-card animate-in">
                         <div class="stat-value">${originalChecksum !== mutatedChecksum ? 'YES' : 'NO'}</div>
@@ -1134,23 +1237,29 @@
         }
         
         // Genetic Algorithm
+        let currentCities = [];
+        let currentDistances = [];
+        
         function runGeneticAlgorithm() {
             const popSize = parseInt(document.getElementById('populationSize').value);
             const gens = parseInt(document.getElementById('generations').value);
             const crossover = document.getElementById('crossoverType').value;
             const mutRate = parseFloat(document.getElementById('gaMutationRate').value) / 100;
             
-            const cities = ['X', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
-            const distances = generateRandomDistances(cities.length);
+            currentCities = ['X', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+            currentDistances = generateRandomDistances(currentCities.length);
             
-            let population = initializePopulation(popSize, cities);
+            // Draw network diagram
+            drawTSPNetwork(currentCities, currentDistances);
+            
+            let population = initializePopulation(popSize, currentCities);
             const history = [];
             
             for (let gen = 0; gen < gens; gen++) {
                 population = population.map(tour => ({
                     tour: tour,
-                    fitness: calculateFitness(tour, distances),
-                    distance: calculateTotalDistance(tour, distances)
+                    fitness: calculateFitness(tour, currentDistances),
+                    distance: calculateTotalDistance(tour, currentDistances)
                 })).sort((a, b) => a.distance - b.distance);
                 
                 if (gen % Math.max(1, Math.floor(gens/10)) === 0 || gen === gens - 1) {
@@ -1178,7 +1287,99 @@
                 population = newPop;
             }
             
-            displayGAResults(history, cities);
+            displayGAResults(history, currentCities);
+        }
+        
+        function drawTSPNetwork(cities, distances) {
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("class", "network-svg");
+            svg.setAttribute("viewBox", "0 0 600 400");
+            
+            // Generate positions for cities in a circle
+            const centerX = 300;
+            const centerY = 200;
+            const radius = 150;
+            const positions = {};
+            
+            cities.forEach((city, i) => {
+                const angle = (i / cities.length) * 2 * Math.PI - Math.PI / 2;
+                positions[city] = {
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                };
+            });
+            
+            // Draw edges (showing only some to avoid clutter)
+            const cityToIndex = (city) => {
+                if (city === 'X') return 0;
+                return city.charCodeAt(0) - 64;
+            };
+            
+            // Draw edges for cities close to each other
+            cities.forEach((city1, i) => {
+                cities.slice(i + 1).forEach(city2 => {
+                    const idx1 = cityToIndex(city1);
+                    const idx2 = cityToIndex(city2);
+                    const dist = distances[idx1][idx2];
+                    
+                    // Only show shorter connections to avoid clutter
+                    if (dist < 60) {
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        line.setAttribute("x1", positions[city1].x);
+                        line.setAttribute("y1", positions[city1].y);
+                        line.setAttribute("x2", positions[city2].x);
+                        line.setAttribute("y2", positions[city2].y);
+                        line.setAttribute("stroke", "#e2e8f0");
+                        line.setAttribute("stroke-width", "2");
+                        svg.appendChild(line);
+                        
+                        // Distance label
+                        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        text.setAttribute("x", (positions[city1].x + positions[city2].x) / 2);
+                        text.setAttribute("y", (positions[city1].y + positions[city2].y) / 2);
+                        text.setAttribute("fill", "#718096");
+                        text.setAttribute("font-size", "10");
+                        text.setAttribute("text-anchor", "middle");
+                        text.textContent = dist;
+                        svg.appendChild(text);
+                    }
+                });
+            });
+            
+            // Draw nodes
+            cities.forEach(city => {
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", positions[city].x);
+                circle.setAttribute("cy", positions[city].y);
+                circle.setAttribute("r", city === 'X' ? "20" : "15");
+                circle.setAttribute("fill", city === 'X' ? "#48bb78" : "#667eea");
+                circle.setAttribute("stroke", "white");
+                circle.setAttribute("stroke-width", "3");
+                svg.appendChild(circle);
+                
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", positions[city].x);
+                text.setAttribute("y", positions[city].y + 5);
+                text.setAttribute("fill", "white");
+                text.setAttribute("font-size", "16");
+                text.setAttribute("font-weight", "bold");
+                text.setAttribute("text-anchor", "middle");
+                text.textContent = city;
+                svg.appendChild(text);
+            });
+            
+            const networkHtml = `
+                <h3>TSP Network Diagram</h3>
+                <div class="network-diagram animate-in">
+                    ${svg.outerHTML}
+                    <p style="margin-top:15px; color:#718096; text-align:center;">
+                        <strong>Cities as nodes</strong> (green = starting point X), with some shorter distances labeled (&lt;60km shown). 
+                        <br><strong>Goal:</strong> Find shortest route visiting all cities exactly once and returning home.
+                    </p>
+                </div>
+            `;
+            
+            document.getElementById('tspNetwork').innerHTML = networkHtml;
         }
         
         function generateRandomDistances(n) {
@@ -1351,11 +1552,11 @@
                     </div>
                     <div class="stat-card animate-in">
                         <div class="stat-value">${history[0].best.distance.toFixed(0)}</div>
-                        <div class="stat-label">Initial Distance (km)</div>
+                        <div class="stat-label">Initial Best Distance (km)</div>
                     </div>
                     <div class="stat-card animate-in">
                         <div class="stat-value">${history[history.length-1].best.distance.toFixed(0)}</div>
-                        <div class="stat-label">Final Distance (km)</div>
+                        <div class="stat-label">Final Best Distance (km)</div>
                     </div>
                     <div class="stat-card animate-in">
                         <div class="stat-value">${improvement.toFixed(1)}%</div>
@@ -1364,8 +1565,10 @@
                 </div>
                 
                 <div class="info-box">
-                    <strong>Result:</strong> The genetic algorithm reduced the tour distance by ${(history[0].best.distance - history[history.length-1].best.distance).toFixed(0)} km 
-                    through ${history[history.length-1].generation} generations of evolution!
+                    <strong>Evolution in Action:</strong> Starting with ${history[0].best.distance.toFixed(0)} km (random tour), 
+                    the genetic algorithm evolved the population to ${history[history.length-1].best.distance.toFixed(0)} km—
+                    a ${(history[0].best.distance - history[history.length-1].best.distance).toFixed(0)} km improvement 
+                    through ${history[history.length-1].generation} generations of selection, crossover, and mutation!
                 </div>
                 
                 <h3>Evolution Progress:</h3>
@@ -1374,11 +1577,12 @@
                         <div class="generation animate-in" style="animation-delay: ${idx * 0.05}s;">
                             <strong>Generation ${h.generation}</strong>
                             <div class="tour">
-                                <span style="font-size:0.95em;">${h.best.tour.join(' → ')} → ${h.best.tour[0]}</span>
+                                <span style="font-size:0.9em;">${h.best.tour.join(' → ')} → ${h.best.tour[0]}</span>
                                 <span class="fitness">${h.best.distance.toFixed(0)} km</span>
                             </div>
                             <div style="color:#718096; font-size:0.9em; margin-top:5px;">
-                                Population Average: ${h.average.toFixed(0)} km
+                                Population Average: ${h.average.toFixed(0)} km 
+                                (Best is ${((1 - h.best.distance/h.average) * 100).toFixed(1)}% better than average)
                             </div>
                         </div>
                     `).join('')}
@@ -1395,3 +1599,4 @@
     </script>
 </body>
 </html>
+
